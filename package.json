@@ -1,0 +1,36 @@
+{
+	"name": "ds-javascript-task",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"start": "webpack serve --env mode=development",
+		"build:dev": "webpack --env mode=development",
+		"build:prod": "webpack --env mode=production"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"devDependencies": {
+		"@svgr/webpack": "^8.1.0",
+		"css-loader": "^7.1.2",
+		"eslint": "^8.2.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-prettier": "^5.2.1",
+		"html-webpack-plugin": "^5.6.3",
+		"prettier": "^3.3.3",
+		"sass": "^1.80.4",
+		"sass-loader": "^16.0.2",
+		"style-loader": "^4.0.0",
+		"webpack": "^5.95.0",
+		"webpack-cli": "^5.1.4",
+		"webpack-dev-server": "^5.1.0"
+	},
+	"dependencies": {
+		"eslint-config-airbnb": "^19.0.4",
+		"eslint-config-airbnb-standard": "^3.1.0",
+		"eslint-plugin-import": "^2.31.0",
+		"install-peerdeps": "^3.0.3",
+		"url-loader": "^4.1.1"
+	}
+}

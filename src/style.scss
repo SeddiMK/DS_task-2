@@ -1,0 +1,43 @@
+$bcg-color-drop-zone: purple;
+
+body {
+  font-size: 40px;
+  // background-color: yellowgreen;
+}
+
+.error {
+  color: red;
+}
+.file-info {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  cursor: grab;
+}
+.file-info img {
+  max-width: 50px;
+  max-height: 50px;
+  margin-right: 10px;
+}
+.file-remove {
+  cursor: pointer;
+  color: blue;
+  margin-left: auto;
+}
+.file-drag-over {
+  border: 2px dashed #009688;
+  background-color: purple;
+}
+#dropZone {
+  cursor: pointer;
+
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+}
+.loading {
+  font-style: italic;
+  color: orange;
+}
