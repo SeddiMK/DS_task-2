@@ -28,7 +28,6 @@
 	},
 	"dependencies": {
 		"eslint-config-airbnb": "^19.0.4",
-		"eslint-config-airbnb-standard": "^3.1.0",
 		"eslint-plugin-import": "^2.31.0",
 		"install-peerdeps": "^3.0.3",
 		"url-loader": "^4.1.1"
