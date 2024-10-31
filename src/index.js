@@ -9,78 +9,90 @@ let fileList = [];
 
 function initializationDOM() {
   const app = document.getElementById("app");
+  app.classList.add("app");
+
+  const cnt = document.createElement("section");
+  cnt.classList.add("app__container", "container");
+
   const title = document.createElement("h1");
+  title.classList.add("app__title");
   title.textContent = "Загрузчик изображений";
-  app.appendChild(title);
 
   const description = document.createElement("p");
+  description.classList.add("app__condition");
   description.textContent =
     "Вы можете загрузить до 5 файлов формата JPG, JPEG, PNG, размер одного из которых составляет до 10 МБ";
-  app.appendChild(description);
 
   const form = document.createElement("form");
   form.id = "fileUploadForm";
-
-  const dropZone = document.createElement("div");
-  dropZone.id = "dropZone";
-  dropZone.textContent = "Перетащите файлы сюда или нажмите, чтобы выбрать";
-  dropZone.classList.add("drop-zone");
+  form.classList.add("app__form", "form");
 
   const fileInput = document.createElement("input");
+  fileInput.id = "fileInput";
+  fileInput.classList.add("form__inp");
   fileInput.type = "file";
   fileInput.multiple = true;
   fileInput.accept = ".jpg, .jpeg, .png";
-  fileInput.id = "fileInput";
   fileInput.style.display = "none";
-  form.appendChild(fileInput);
 
+  const dropZone = document.createElement("div");
+  dropZone.classList.add("app__drop-zone", "drop-zone");
+  dropZone.id = "dropZone";
+  dropZone.textContent = "Перетащите файлы сюда или нажмите, чтобы выбрать";
+  // drag and drop
   dropZone.addEventListener("click", () => fileInput.click());
   dropZone.addEventListener("dragover", dragOver);
   dropZone.addEventListener("dragleave", dragLeave);
   dropZone.addEventListener("drop", fileDrop);
 
-  form.appendChild(dropZone);
-
   const btnSubmit = document.createElement("button");
-  btnSubmit.classList.add("btn-submit");
+  btnSubmit.classList.add("app__btn-submit", "btn", "btn-submit");
   btnSubmit.type = "submit";
   btnSubmit.textContent = "Загрузить файлы";
-  form.appendChild(btnSubmit);
-
-  const errorContainer = document.createElement("div");
-  errorContainer.id = "errorContainer";
-  errorContainer.classList.add("error");
-  form.appendChild(errorContainer);
 
   const previewContainer = document.createElement("ul");
   previewContainer.id = "previewContainer";
   previewContainer.classList.add("app__images-list", "image");
-  app.appendChild(previewContainer);
 
   // Select сортировки
   const selectSort = document.createElement("select");
+  selectSort.classList.add("form__select", "select");
   selectSort.id = "selectSort";
 
   const optionName = document.createElement("option");
   optionName.value = "name";
   optionName.textContent = "Сортировать по имени";
-  selectSort.appendChild(optionName);
 
   const optionSize = document.createElement("option");
   optionSize.value = "size";
   optionSize.textContent = "Сортировать по размеру";
-  selectSort.appendChild(optionSize);
 
   const optionDate = document.createElement("option");
   optionDate.value = "date";
   optionDate.textContent = "Сортировать по дате загрузки";
-  selectSort.appendChild(optionDate);
 
   selectSort.addEventListener("change", sortChange);
-  form.appendChild(selectSort);
 
-  app.appendChild(form);
-  app.appendChild(previewContainer);
+  const errorContainer = document.createElement("div");
+  errorContainer.classList.add("error");
+  errorContainer.id = "errorContainer";
+
+  app.appendChild(cnt);
+  cnt.appendChild(title);
+  cnt.appendChild(description);
+  cnt.appendChild(previewContainer);
+  form.appendChild(fileInput);
+  form.appendChild(dropZone);
+  form.appendChild(btnSubmit);
+  form.appendChild(selectSort);
+  form.appendChild(errorContainer);
+
+  selectSort.appendChild(optionName);
+  selectSort.appendChild(optionSize);
+  selectSort.appendChild(optionDate);
+
+  cnt.appendChild(form);
+  cnt.appendChild(previewContainer);
 
   fileInput.addEventListener("change", fileChange);
   form.addEventListener("submit", formSubmit);
@@ -139,7 +151,7 @@ function formSubmit(event) {
           loadingText.textContent = `Файл ${file.name} успешно загружен!`;
           fileList = [];
         },
-        (index + 1) * 1000,
+        (index + 1) * 2000,
       );
     });
   }
@@ -249,14 +261,10 @@ function dragEndItem(event) {
 }
 
 // Отрисовка информации о файле
-
 // !!!!! ОТРИСОВКА ФАЙЛА ДЕТАЛИ
 function detailsFile() {
   const previewContainer = document.getElementById("previewContainer");
   previewContainer.innerHTML = "";
-
-  let fileListArray = Array.from(fileList);
-  const newFiles = [];
 
   if (fileList.length > 0) {
     [...fileList].forEach((file, index) => {
@@ -271,7 +279,6 @@ function detailsFile() {
       fileDetails.classList.add("image-desc__description");
       const fileBlock = document.createElement("li");
       fileBlock.classList.add("image-desc__item");
-      // fileBlock.setAttribute("data-value", index);
       previewContainer.appendChild(fileBlock);
       fileBlock.draggable = true;
 
@@ -370,26 +377,6 @@ function detailsFile() {
   }
 }
 
-// !!!!
-function validationFile(file) {
-  const newArrFiles = [];
-  if (!allFormats.includes(file.type)) {
-    const error = document.createElement("p");
-    error.textContent = `Недопустимый формат файла: ${file.name}`;
-    errorContainer.appendChild(error);
-  } else if (file.size > maxFileSize) {
-    const error = document.createElement("p");
-    error.textContent = `Превышен максимальный размер файла: ${file.name}`;
-    errorContainer.appendChild(error);
-  } else if (fileList.length + newArrFiles.length < maxFiles) {
-    return newArrFiles.push(file);
-  } else {
-    const error = document.createElement("p");
-    error.textContent = `Превышено допустимое количество файлов: ${maxFiles}`;
-    errorContainer.appendChild(error);
-  }
-}
-
 // Проверка на дублирование файлов в File List загружаемого контента
 function isDuplicateFileList(file) {
   if (fileList) {
@@ -417,27 +404,33 @@ function validationFilesAdding(files) {
           const error = document.createElement("p");
           error.textContent = `Недопустимый формат файла: ${file.name}`;
           errorContainer.appendChild(error);
+          return false;
         } else if (file.size > maxFileSize) {
           const error = document.createElement("p");
           error.textContent = `Превышен максимальный размер файла: ${file.name}`;
           errorContainer.appendChild(error);
+          return false;
         } else if (fileList.length + newArrFiles.length < maxFiles) {
-          return newArrFiles.push(file);
+          newArrFiles.push(file);
+          return true;
         } else {
           const error = document.createElement("p");
           error.textContent = `Превышено допустимое количество файлов: ${maxFiles}`;
           errorContainer.appendChild(error);
+          return false;
         }
       } else {
         const error = document.createElement("p");
         error.textContent = "Вы выбирали уже этот файл";
         errorContainer.appendChild(error);
+        return false;
       }
     });
   } else {
     const error = document.createElement("p");
     error.textContent = "Вы выбирали уже этот файл";
     errorContainer.appendChild(error);
+    return false;
   }
 
   fileList.push(...newArrFiles);
