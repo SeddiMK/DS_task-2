@@ -13,7 +13,7 @@ body {
   width: 100%;
   height: 100%;
 }
-.image__item {
+.image-desc__item {
   width: 400px;
   height: 100px;
   border: 1px solid #ccc;
@@ -24,7 +24,7 @@ body {
   align-items: center;
   cursor: grab;
 }
-.image__item img {
+.image-desc__item img {
   max-width: 50px;
   max-height: 50px;
   margin-right: 10px;
@@ -71,4 +71,114 @@ body {
 .slist li.active {
   border: 1px solid #ffa5a5;
   background: #ffe7e7;
+}
+// -----------------------------------
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  width: 100px;
+  float: left;
+}
+
+li {
+  cursor: move;
+  margin: 1px;
+  padding: 5px 20px;
+  font-size: 20px;
+  background-color: #ccc;
+}
+
+.ghost {
+  opacity: 0.4;
+}
+
+// -------------------------------------
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #b5aaf5;
+}
+.container {
+  font-family: "Poppins", sans-serif;
+  background-color: #ffffff;
+  padding: 3em 2em;
+  width: 90%;
+  max-width: 37em;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  border-radius: 0.8em;
+}
+#previewContainer {
+  position: relative;
+  padding-inline-start: 0;
+  list-style-type: none;
+}
+.image-desc__item {
+  padding: 0.8em 0;
+  border-radius: 0.2em;
+  margin: 1em auto;
+  border: 1px solid #000000;
+  text-align: center;
+}
+.image-desc__item:hover {
+  cursor: move;
+  background-color: #d1c9ff;
+  border-color: #8673f2;
+  color: #8673f2;
+}
+
+// --------------------------------------
+#previewContainer {
+  padding: 25px;
+  background: #fff;
+  border-radius: 7px;
+  padding: 30px 25px 20px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+#previewContainer .image-desc__item {
+  list-style: none;
+  display: flex;
+  cursor: move;
+  background: #fff;
+  align-items: center;
+  border-radius: 5px;
+  padding: 10px 13px;
+  margin-bottom: 11px;
+  /* box-shadow: 0 2px 4px rgba(0,0,0,0.06); */
+  border: 1px solid #ccc;
+  justify-content: space-between;
+}
+.image-desc__item .details {
+  display: flex;
+  align-items: center;
+}
+.image-desc__item .details img {
+  height: 43px;
+  width: 43px;
+  pointer-events: none;
+  margin-right: 12px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.image-desc__item .details span {
+  font-size: 1.13rem;
+}
+.image-desc__item i {
+  color: #474747;
+  font-size: 1.13rem;
+}
+.image-desc__item.dragging {
+  opacity: 0.6;
+}
+.image-desc__item.dragging :where(.details, i) {
+  opacity: 0;
 }

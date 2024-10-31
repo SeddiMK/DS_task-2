@@ -1,7 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
-const { type } = require("os");
 const loader = require("sass-loader");
 
 module.exports = (env) => {

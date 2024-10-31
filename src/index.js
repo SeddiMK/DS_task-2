@@ -54,7 +54,7 @@ function initializationDOM() {
 
   const previewContainer = document.createElement("ul");
   previewContainer.id = "previewContainer";
-  previewContainer.classList.add("app__images-list");
+  previewContainer.classList.add("app__images-list", "image");
   app.appendChild(previewContainer);
 
   // Select сортировки
@@ -144,14 +144,9 @@ function formSubmit(event) {
     });
   }
 }
+
 // События drag and drop
-function dragStart(event, index) {
-  event.dataTransfer.setData("text/plain", index);
-  event.target.classList.add(`selected`);
-}
-function dragEnd(event) {
-  event.target.classList.remove(`selected`);
-}
+// drop input
 function dragOver(event) {
   event.preventDefault();
   const dropZone = document.getElementById("dropZone");
@@ -172,15 +167,90 @@ function fileDrop(event) {
 
   validationFilesAdding(files);
 }
-function dragOverItem(event) {
-  event.preventDefault();
+
+// drag and drop сортировка list image items-описание
+function dragStartItem(event) {
+  hoveredItems();
+  if (event.target.classList.contains("image-desc__item")) {
+    event.target.classList.add("selected");
+    event.dataTransfer.effectAllowed = "move";
+
+    // event.dataTransfer.setData("text/plain", event.target.dataset.id);
+  }
 }
 
-function dropItem(event, index) {
-  detailsFile();
+function hoveredItems() {
+  const previewContainer = document.getElementById("previewContainer");
+  const listItems = previewContainer.querySelectorAll(".image-desc__item");
+
+  listItems.forEach((el) => {
+    el.ondragenter = () => setTimeout(() => el.classList.add("hovered"), 0);
+    el.ondragleave = () => el.classList.remove("hovered");
+  });
+
+  const findParent = event.target.closest("li.image-desc__item");
+  if (findParent) {
+    findParent.classList.add("hovered");
+  }
+}
+
+// function dragEnterItem(event) {
+//   const findParent = event.target.closest("li.image-desc__item");
+//   if (findParent) {
+//     // setTimeout(() => findParent.classList.add("hovered"), 0);
+//   }
+// }
+
+// function dragLeaveItem(event) {
+//   const findParent = event.target.closest("li.image-desc__item");
+
+//   console.log(findParent);
+
+//   if (findParent) {
+//     // setTimeout(() => findParent.classList.remove("hovered"), 0);
+//   }
+// }
+
+function dropItem(event) {
+  event.preventDefault();
+
+  const previewContainer = document.getElementById("previewContainer");
+  const draggedItem = document.querySelector(".image-desc__item.selected");
+  const targetItem = event.target.closest("li.image-desc__item");
+
+  if (
+    targetItem &&
+    targetItem !== draggedItem &&
+    targetItem.classList.contains("image-desc__item")
+  ) {
+    // Определяем, перемещается элемент вниз или вверх
+    const isMovingDown =
+      draggedItem.compareDocumentPosition(targetItem) &
+      Node.DOCUMENT_POSITION_FOLLOWING;
+
+    if (isMovingDown) {
+      // Двигаясь вниз, вставить перед следующим родственником
+      previewContainer.insertBefore(draggedItem, targetItem.nextSibling);
+    } else {
+      // Двигаясь вверх, вставить непосредственно перед
+      previewContainer.insertBefore(draggedItem, targetItem);
+    }
+  }
+
+  draggedItem.classList.remove("selected");
+  targetItem.classList.remove("hovered");
+}
+
+function dragEndItem(event) {
+  event.target.classList.remove("selected");
+  document
+    .querySelectorAll(".image__item.hovered")
+    .forEach((item) => item.classList.remove("hovered"));
 }
 
 // Отрисовка информации о файле
+
+// !!!!! ОТРИСОВКА ФАЙЛА ДЕТАЛИ
 function detailsFile() {
   const previewContainer = document.getElementById("previewContainer");
   previewContainer.innerHTML = "";
@@ -198,9 +268,10 @@ function detailsFile() {
       let errorFlag = false;
 
       const fileDetails = document.createElement("div");
-      fileDetails.id = "gallery"; //!!!!
+      fileDetails.classList.add("image-desc__description");
       const fileBlock = document.createElement("li");
-      fileBlock.classList.add("image__item");
+      fileBlock.classList.add("image-desc__item");
+      // fileBlock.setAttribute("data-value", index);
       previewContainer.appendChild(fileBlock);
       fileBlock.draggable = true;
 
@@ -212,16 +283,18 @@ function detailsFile() {
 
       fileReader.onloadend = (event) => {
         const img = document.createElement("img");
+        img.draggable = false;
+        img.classList.add("image-desc__img", "img");
         img.src = event.target.result;
 
         fileDetails.innerHTML = errorFlag
-          ? `<p>Ошибка чтения файла: ${file.name}</p>`
-          : `<p>Имя файла: ${file.name}</p>
+          ? `<p class="image-desc__text-error">Ошибка чтения файла: ${file.name}</p>`
+          : `<p class="image-desc__text-name">Имя файла: ${file.name}</p>
            <p>Формат: ${file.type}</p>
-           <p>Размер: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>`;
+           <p class="image-desc__text-size">Размер: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>`;
 
         const removeButton = document.createElement("button");
-        removeButton.classList.add("file-remove");
+        removeButton.classList.add("image-desc__btn-remove", "file-remove");
         removeButton.textContent = "Удалить";
 
         removeButton.onclick = (e) => {
@@ -261,28 +334,63 @@ function detailsFile() {
       // fileReader.readAsDataURL(file);
 
       // Drag and Drop
-      fileBlock.addEventListener("dragstart", (event) =>
-        dragStart(event, index),
+      previewContainer.addEventListener("dragstart", (event) =>
+        dragStartItem(event, index),
       );
-      fileBlock.addEventListener("dragend", (event) => dragEnd(event, index));
-      fileBlock.addEventListener("dragover", (event) => dragOverItem(event));
-      fileBlock.addEventListener("drop", (event) => dropItem(event, index));
+      fileBlock.addEventListener("dragend", (event) =>
+        dragEndItem(event, index),
+      );
+      // fileBlock.addEventListener("dragleave", (event) => dragLeaveItem(event));
+      previewContainer.addEventListener("dragover", (event) =>
+        event.preventDefault(),
+      );
 
-      // Сортировка drag over
+      // previewContainer.addEventListener("dragenter", (event) =>
+      //   dragEnterItem(event),
+      // );
 
+      previewContainer.addEventListener("drop", dropItem);
+
+      // Для сенсоров
+      previewContainer.addEventListener(
+        "touchstart",
+        (event) => dragStartItem(event, index),
+        false,
+      );
+      previewContainer.addEventListener("touchmove", dropItem, false);
+
+      // hoveredItems();
+
+      // Сортировка
       if (fileList > 1 && fileBlock) {
         console.log(fileList);
-        sortable(document.getElementById("previewContainer"), function (item) {
-          console.log(item);
-        });
-        // previewContainer.addEventListener("dragover", (event) =>
-        //   sortDragOver(event),
-        // );
+        //!!!
       }
     });
   }
 }
-// Проверка на Дублирование файлов в File List загружаемого контента
+
+// !!!!
+function validationFile(file) {
+  const newArrFiles = [];
+  if (!allFormats.includes(file.type)) {
+    const error = document.createElement("p");
+    error.textContent = `Недопустимый формат файла: ${file.name}`;
+    errorContainer.appendChild(error);
+  } else if (file.size > maxFileSize) {
+    const error = document.createElement("p");
+    error.textContent = `Превышен максимальный размер файла: ${file.name}`;
+    errorContainer.appendChild(error);
+  } else if (fileList.length + newArrFiles.length < maxFiles) {
+    return newArrFiles.push(file);
+  } else {
+    const error = document.createElement("p");
+    error.textContent = `Превышено допустимое количество файлов: ${maxFiles}`;
+    errorContainer.appendChild(error);
+  }
+}
+
+// Проверка на дублирование файлов в File List загружаемого контента
 function isDuplicateFileList(file) {
   if (fileList) {
     return fileList.some(
@@ -296,7 +404,7 @@ function isDuplicateFileList(file) {
     errorContainer.appendChild(error);
   }
 }
-// Проверка на Условия в File List загружаемого контента
+
 function validationFilesAdding(files) {
   const newArrFiles = [];
   const errorContainer = document.getElementById("errorContainer");
@@ -336,6 +444,8 @@ function validationFilesAdding(files) {
 
   detailsFile();
 }
+
+/* eslint-disable no-param-reassign */
 function fileChange(event) {
   const files = Array.from(event.target.files);
 
@@ -345,5 +455,26 @@ function fileChange(event) {
   validationFilesAdding(files);
   // event.target.value = ""; // Сбросить параметры ввода, чтобы при необходимости можно было снова выбрать тот же файл
 }
+
+// Сортировка select
+function sortChange(event) {
+  const sortBy = event.target.value;
+
+  fileList.sort((a, b) => {
+    if (sortBy === "name") {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === "size") {
+      return a.size - b.size;
+    }
+    if (sortBy === "date") {
+      return a.lastModified - b.lastModified;
+    }
+    return 0;
+  });
+
+  detailsFile();
+}
+
 // Инициализация DOM
 document.addEventListener("DOMContentLoaded", initializationDOM);
