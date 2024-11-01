@@ -31,6 +31,7 @@ function initializationDOM() {
   fileInput.id = "fileInput";
   fileInput.classList.add("form__inp");
   fileInput.type = "file";
+  fileInput.name = "images_upload";
   fileInput.multiple = true;
   fileInput.accept = ".jpg, .jpeg, .png";
   fileInput.style.display = "none";
@@ -95,10 +96,10 @@ function initializationDOM() {
   cnt.appendChild(previewContainer);
 
   fileInput.addEventListener("change", fileChange);
-  form.addEventListener("submit", formSubmit);
+  form.addEventListener("submit", (event) => formSubmit(event, form));
 }
 
-// Предотвращаем открытие файла картинки если не попали на зону загрузки
+// Предотвращаем открытие файла картинки если не попали на зону загрузки или отпустили в другом месте
 window.addEventListener(
   "dragover",
   (event) => {
@@ -113,49 +114,6 @@ window.addEventListener(
   },
   false,
 );
-
-//  Загрузить файлы
-function formSubmit(event) {
-  event.preventDefault();
-
-  const errorContainer = document.getElementById("errorContainer");
-  errorContainer.innerHTML = "";
-  if (fileList.length === 0) {
-    errorContainer.textContent = "Файлы для загрузки не выбраны.";
-    return;
-  }
-
-  // Имитация загрузки файла
-  const previewContainer = document.getElementById("previewContainer");
-  previewContainer.innerHTML = "";
-
-  if (fileList.length > 0) {
-    [...fileList].forEach((file, index) => {
-      const fileBlock = document.createElement("li");
-      fileBlock.classList.add("image__item");
-
-      const loadingText = document.createElement("p");
-      loadingText.textContent = `Загрузка ${file.name}...`;
-      loadingText.classList.add("loading");
-
-      const spinnerLoading = document.createElement("img");
-      spinnerLoading.src = loadingSpinner;
-
-      fileBlock.appendChild(loadingText);
-      fileBlock.appendChild(spinnerLoading);
-      previewContainer.appendChild(fileBlock);
-
-      setTimeout(
-        () => {
-          spinnerLoading.src = "";
-          loadingText.textContent = `Файл ${file.name} успешно загружен!`;
-          fileList = [];
-        },
-        (index + 1) * 2000,
-      );
-    });
-  }
-}
 
 // События drag and drop
 // drop input
@@ -186,42 +144,8 @@ function dragStartItem(event) {
   if (event.target.classList.contains("image-desc__item")) {
     event.target.classList.add("selected");
     event.dataTransfer.effectAllowed = "move";
-
-    // event.dataTransfer.setData("text/plain", event.target.dataset.id);
   }
 }
-
-function hoveredItems() {
-  const previewContainer = document.getElementById("previewContainer");
-  const listItems = previewContainer.querySelectorAll(".image-desc__item");
-
-  listItems.forEach((el) => {
-    el.ondragenter = () => setTimeout(() => el.classList.add("hovered"), 0);
-    el.ondragleave = () => el.classList.remove("hovered");
-  });
-
-  const findParent = event.target.closest("li.image-desc__item");
-  if (findParent) {
-    findParent.classList.add("hovered");
-  }
-}
-
-// function dragEnterItem(event) {
-//   const findParent = event.target.closest("li.image-desc__item");
-//   if (findParent) {
-//     // setTimeout(() => findParent.classList.add("hovered"), 0);
-//   }
-// }
-
-// function dragLeaveItem(event) {
-//   const findParent = event.target.closest("li.image-desc__item");
-
-//   console.log(findParent);
-
-//   if (findParent) {
-//     // setTimeout(() => findParent.classList.remove("hovered"), 0);
-//   }
-// }
 
 function dropItem(event) {
   event.preventDefault();
@@ -260,8 +184,22 @@ function dragEndItem(event) {
     .forEach((item) => item.classList.remove("hovered"));
 }
 
+function hoveredItems() {
+  const previewContainer = document.getElementById("previewContainer");
+  const listItems = previewContainer.querySelectorAll(".image-desc__item");
+
+  listItems.forEach((el) => {
+    el.ondragenter = () => setTimeout(() => el.classList.add("hovered"), 2);
+    el.ondragleave = () => el.classList.remove("hovered");
+  });
+
+  const findParent = event.target.closest("li.image-desc__item");
+  if (findParent) {
+    findParent.classList.add("hovered");
+  }
+}
+
 // Отрисовка информации о файле
-// !!!!! ОТРИСОВКА ФАЙЛА ДЕТАЛИ
 function detailsFile() {
   const previewContainer = document.getElementById("previewContainer");
   previewContainer.innerHTML = "";
@@ -270,8 +208,6 @@ function detailsFile() {
     [...fileList].forEach((file, index) => {
       const fileReader = new FileReader();
       const dataTransfer = new DataTransfer();
-      const errorContainer = document.getElementById("errorContainer");
-      const fileInput = document.getElementById("fileInput");
 
       let errorFlag = false;
 
@@ -285,7 +221,6 @@ function detailsFile() {
       fileReader.onerror = () => {
         errorFlag = true;
       };
-
       fileReader.readAsDataURL(file);
 
       fileReader.onloadend = (event) => {
@@ -305,40 +240,23 @@ function detailsFile() {
         removeButton.textContent = "Удалить";
 
         removeButton.onclick = (e) => {
-          // [...fileList].splice(index, 1);
-          // fileListArray.splice(index, 1);
-
           fileBlock.remove();
-
-          console.log(file, "file");
 
           if (fileList.length > 0) {
             [...fileList].forEach((f) => {
-              // console.log(f, "f");
-
               if (f.name !== file.name) dataTransfer.items.add(f);
             });
           }
           [...fileList] = dataTransfer.files;
-          // if (errorContainer) {
-          //   errorContainer.innerHTML = "";
-          // }
-          // fileBlock.dispatchEvent(new Event("change"));
-          // console.log([...fileList], "[...fileList] btn delete");
+
           detailsFile();
         };
-
-        // console.log(fileList, "fileList -----------------");
 
         fileBlock.appendChild(img);
         fileBlock.appendChild(fileDetails);
         fileBlock.appendChild(removeButton);
         previewContainer.appendChild(fileBlock);
       };
-
-      // console.log(file);
-
-      // fileReader.readAsDataURL(file);
 
       // Drag and Drop
       previewContainer.addEventListener("dragstart", (event) =>
@@ -347,15 +265,9 @@ function detailsFile() {
       fileBlock.addEventListener("dragend", (event) =>
         dragEndItem(event, index),
       );
-      // fileBlock.addEventListener("dragleave", (event) => dragLeaveItem(event));
       previewContainer.addEventListener("dragover", (event) =>
         event.preventDefault(),
       );
-
-      // previewContainer.addEventListener("dragenter", (event) =>
-      //   dragEnterItem(event),
-      // );
-
       previewContainer.addEventListener("drop", dropItem);
 
       // Для сенсоров
@@ -365,14 +277,6 @@ function detailsFile() {
         false,
       );
       previewContainer.addEventListener("touchmove", dropItem, false);
-
-      // hoveredItems();
-
-      // Сортировка
-      if (fileList > 1 && fileBlock) {
-        console.log(fileList);
-        //!!!
-      }
     });
   }
 }
@@ -442,11 +346,7 @@ function validationFilesAdding(files) {
 function fileChange(event) {
   const files = Array.from(event.target.files);
 
-  // console.log(event.target.files, "event.target");
-  // console.log(files, "files");
-
   validationFilesAdding(files);
-  // event.target.value = ""; // Сбросить параметры ввода, чтобы при необходимости можно было снова выбрать тот же файл
 }
 
 // Сортировка select
@@ -467,6 +367,63 @@ function sortChange(event) {
   });
 
   detailsFile();
+}
+
+//  Загрузить файлы
+function formSubmit(event, form) {
+  event.preventDefault();
+
+  // Отправка файлов на backend
+  if (form && fileList.length > 0) {
+    const formData = new FormData(form);
+
+    console.table([...formData.entries()]);
+
+    fetch("/upload", {
+      method: "POST",
+      body: formData,
+    })
+      .then(() => console.log("Файлы загружены (Имитация)"))
+      .catch((reason) => console.error(reason));
+  }
+
+  const errorContainer = document.getElementById("errorContainer");
+  errorContainer.innerHTML = "";
+  if (fileList.length === 0) {
+    errorContainer.textContent = "Файлы для загрузки не выбраны.";
+    return;
+  }
+
+  // Имитация загрузки файла
+  const previewContainer = document.getElementById("previewContainer");
+  previewContainer.innerHTML = "";
+
+  if (fileList.length > 0) {
+    [...fileList].forEach((file, index) => {
+      const fileBlock = document.createElement("li");
+      fileBlock.classList.add("image__item");
+
+      const loadingText = document.createElement("p");
+      loadingText.textContent = `Загрузка ${file.name}...`;
+      loadingText.classList.add("loading");
+
+      const spinnerLoading = document.createElement("img");
+      spinnerLoading.src = loadingSpinner;
+
+      fileBlock.appendChild(loadingText);
+      fileBlock.appendChild(spinnerLoading);
+      previewContainer.appendChild(fileBlock);
+
+      setTimeout(
+        () => {
+          spinnerLoading.src = "";
+          loadingText.textContent = `Файл ${file.name} успешно загружен!`;
+          fileList = [];
+        },
+        (index + 1) * 2000,
+      );
+    });
+  }
 }
 
 // Инициализация DOM
